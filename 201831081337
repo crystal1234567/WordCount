@@ -1,0 +1,386 @@
+#include "pch.h"
+#include "word_count.h"
+#include "word_count_2.h"
+#include <iostream>
+#include <fstream>
+#include <string> 
+
+using namespace std;
+const int MAX = 1000;
+int i = 0;
+typedef struct name
+{
+	string str;
+	int fre = 0;
+	struct name *last;
+}count_str;
+typedef struct rank
+{
+	string str;
+	int fre;
+}Rank;
+class word_count
+{
+public:
+	void f_open();//打开文件函数
+	void count_acill();//统计文件中出现的acill 码
+	void count_aphabet();//统计文件中出现的字母
+	void count_Enum();//统计文件中出现的字母
+	void count_seperetors();//统计文件中出现的分割符号
+	void count_line();//存储文件中的行字符串
+	void display_1();
+protected:
+	ifstream f_in;
+private:
+	int acill;
+	int aphabate;
+	int Enum;
+	int seperetors;
+	string line_count[MAX];
+	string line_count_all[MAX];
+};
+
+void word_count::f_open()//打开文件的函数
+{
+	string str_name;
+	cout << "请输入文件名：" << '\t';
+	cin >> str_name;
+	f_in.open(str_name);
+	if (!f_in.is_open())
+	{
+		cout << "文件打开失败！";
+		exit(1);
+	}
+	else
+	{
+		cout << "文件打开成功！" << endl;
+	}
+
+
+}
+void word_count::count_acill()//统计文件中出现的acill码
+{
+	char ch;
+	acill = 0;
+	f_in.clear();//清除文件位置。
+	f_in.seekg(0, ios::beg);
+
+	while (!f_in.eof())
+	{
+
+		f_in.get(ch);
+		if (0 <= ch && ch <= 127)
+		{
+			acill++;
+		}
+	}
+	cout << "文件中出现的Acill码共有：" << acill << "个" << endl;
+}
+void word_count::count_aphabet()//统计文件中出现的字母
+
+{
+	aphabate = 0;
+	char ch;
+	f_in.clear();
+	f_in.seekg(0, ios::beg);
+	while (!f_in.eof())
+	{
+		f_in.get(ch);
+		if (('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch))
+		{
+			aphabate++;
+		}
+	}
+	cout << "文件中出现的纯英文字母共有：" << aphabate << "个" << endl;
+}
+void word_count::count_Enum()//统计文件中出现的字母
+{
+	Enum = 0;
+	char ch;
+	f_in.clear();
+	f_in.seekg(0, ios::beg);
+	while (!f_in.eof())
+	{
+		f_in.get(ch);
+		if (('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch) || ('0' <= ch && '9' >= ch))
+		{
+			Enum++;
+		}
+	}
+	cout << "文件中出现的英文字母和数字共有：" << Enum << "个" << endl;
+}
+void word_count::count_seperetors()//统计文件中出现的分割符号
+
+{
+	seperetors = 0;
+	char ch;
+	f_in.clear();
+	f_in.seekg(0, ios::beg);
+	while (!f_in.eof())
+	{
+		f_in.get(ch);
+		if (ch == 33 || ch == 34 || ch == 39 || ch == 44 || ch == 46 || ch == 58 || ch == 59 || ch == ' ')
+		{
+			seperetors++;
+		}
+	}
+	cout << "文件中出现的分割符共有：" << seperetors << "个" << endl;
+}
+void word_count::count_line()
+{
+	int s = 0;
+	int s_all = 0;
+	string str;
+	f_in.clear();
+	f_in.seekg(0, ios::beg);
+	while (!f_in.eof())
+	{
+		getline(f_in, str, '\n');
+		s_all++;
+		line_count_all[s_all] = str;
+		if (str != " ")
+
+
+		{
+			line_count[s] = str;
+			s++;
+		}
+	}
+}
+
+
+class word_count2 :public word_count
+{
+public:
+	void read_str();
+	void store_str(string s);
+	void rank_fre();
+	void RankStr();
+	void display();
+	void count_limit();
+
+	void ruin_node();
+private:
+	count_str *first, *rear;
+	Rank rank_str[11];
+};
+void word_count2::store_str(string s)
+{
+	if (i == 0)
+	{
+		first = new count_str;
+		first->str = s;
+		first->fre++;
+		rear = new count_str;
+		first->last = rear;
+		rear->last = NULL;
+		i++;
+	}
+	else
+	{
+		count_str *p;
+		p = first;
+		while (p != rear)
+		{
+			if (p->str == s)
+			{
+				p->fre++;
+				break;
+			}
+			p = p->last;
+		}
+		if (p == rear)
+		{
+			p->str = s;
+			p->fre++;
+			rear = new count_str;
+			p->last = rear;
+			rear->last = NULL;
+			i++;
+		}
+	}
+}
+void word_count2::read_str()
+{
+	char ch;//收集每一个文件中字符
+	string str_1;//记录每一个规定的字符
+	long pos;//记录f_in的位置
+	int fir = 0;//判断第一个字符是否为字母
+	f_in.clear();
+	f_in.seekg(0, ios::beg);
+
+	while (!f_in.eof())
+	{
+		f_in.get(ch);
+		fir++;
+		if (('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch))
+		{
+
+			int read = 1;//记录规定字符创的长度。
+
+			if (fir == 1)
+			{
+				pos = f_in.tellg();
+
+			}
+			else
+			{
+
+				pos = f_in.tellg();
+				f_in.seekg(pos - 1);//得到上一个字符
+				f_in.get(ch);
+			}
+
+			if (('0' <= ch && ch <= '9') || ch == '" ')
+			{
+				f_in.seekg(pos);
+				f_in.get(ch);
+				while (('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch) || ('0' <= ch && ch <= '9'))
+				{
+					f_in.get(ch);
+				}
+			}
+			else
+			{
+				read++;
+				int k;
+				f_in.seekg(pos);
+				//f_in.get(ch);
+
+				for (k = 1; k < 4; k++)
+				{
+					read++;
+					f_in.get(ch);
+					if (ch<'A' || (ch > 'Z'&& ch < 'a') || ch>'z') break;
+				}
+				if (k == 4)
+				{
+					f_in.get(ch);
+					while (('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch) || ('0' <= ch && ch <= '9'))
+					{
+						f_in.get(ch);
+						read++;
+					}
+					pos = f_in.tellg();
+					f_in.seekg(pos - read);
+					getline(f_in, str_1, ch);
+					store_str(str_1);
+					f_in.seekg(pos);
+
+				}
+			}
+
+		}
+
+	}
+
+}
+void word_count2::rank_fre()
+{
+	count_str *p;
+	rank_str[1].str = first->str;//数组的第二个位置开始存储值
+	rank_str[1].fre = first->fre;
+	p = first->last;
+	while (p != rear)
+	{
+		rank_str[0].str = p->str;
+		rank_str[0].fre = p->fre;
+		for (int k = 1; k < 11; k++)
+		{
+			if (rank_str[0].fre >= rank_str[k].fre)
+			{
+				for (int j = 10; j > k; j--)
+				{
+					rank_str[j].fre = rank_str[j - 1].fre;
+					rank_str[j].str = rank_str[j - 1].str;
+				}
+				rank_str[k] = rank_str[0];
+				break;
+			}
+		}
+		p = p->last;
+	}
+}//写入出现次数最多的10个字符串
+void word_count2::RankStr() //将已经写好的数组中的内容进行一个按字符串
+{
+	for (int k = 1; k < 11; k++)
+	{
+		for (int j = 0; j < rank_str[i].str.length(); j++)
+		{
+			char ch;
+			ch = rank_str[k].str[j];
+			if ('A' <= ch && 'Z' >= ch)
+			{
+				ch = ch + 32;
+				rank_str[k].str[j] = ch;
+			}
+		}
+	}
+
+}
+void word_count2::display()
+{
+	count_str *p;
+	p = first;
+	while (p != rear)
+	{
+		cout << p->str << '\t' << p->fre << endl;
+		p = p->last;
+
+	}
+	cout << endl;
+	for (int k = 1; k < 11; k++)
+	{
+		cout << rank_str[k].str << '\t' << rank_str[k].fre << endl;
+	}
+}
+void word_count2::count_limit()
+{
+	int limit;
+	count_str *p;
+	p = first;
+	cout << "请您输入您要查找限定长度的字符串：" << '\t';
+	cin >> limit;
+	while (p != rear)
+	{
+		if ((p->str).length() == limit)
+		{
+			cout << p->str << endl;
+
+		}
+		p = p->last;
+	}
+}
+void word_count2::ruin_node()
+{
+	count_str *p;
+	p = first;
+	first = first->last;
+	while (first != NULL)
+	{
+		delete p;
+		p = first;
+		first = first->last;
+	}
+	cout << "OK" << endl;
+
+}*/
+void main()
+{
+	
+	word_count2 wc;
+	wc.f_open();
+	wc.count_acill();
+	wc.count_aphabet();
+	wc.count_Enum();
+	wc.count_seperetors();
+	wc.read_str();
+	//cout << "OK" << endl;
+	wc.rank_fre();
+	wc.RankStr();
+	wc.display();
+	wc.count_limit();
+	wc.ruin_node();
+	wc.new_file();
+
+}
